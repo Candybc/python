@@ -1,0 +1,41 @@
+import email
+import imaplib
+from email.header import decode_header
+import webbrowser
+import os
+
+imap = imaplib.IMAP4_SSL("ex2.mail.ovh.net")
+
+username = "username" 
+password = "password"
+
+imap.login(username, password)
+
+res, messages = imap.select('DOSSIER CLIENT')
+
+messages = int(messages[0])
+
+n = 1
+
+for i in range(messages, messages - n, -1):
+    res, msg = imap.fetch(str(i), "(RFC822)")
+    for response in msg:
+        if isinstance(response, tuple):
+            msg = email.message_from_bytes(response[1])
+            subject, encoding = decode_header(msg["Subject"])[0]
+            if isinstance(subject, bytes):
+                # if it's a bytes, decode to str
+                subject = subject.decode(encoding)
+            From, encoding = decode_header(msg.get("From"))[0]
+            if isinstance(From, bytes):
+                From = From.decode(encoding)
+
+            # DATE DO MESSAGE
+            Date = msg["Date"]
+
+            body = msg.get_payload(decode=True).decode()
+
+            print("From : ", From)
+            print("subject : ", subject)
+            print("Date : ", Date)
+            #print("Body : ", body)
